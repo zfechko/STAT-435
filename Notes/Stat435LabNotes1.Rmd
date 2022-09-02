@@ -1,0 +1,426 @@
+---
+title: Stat 435 Lab Notes 1
+always_allow_html: yes
+author: 
+     - Xiongzhi Chen
+     - Washington State University
+header-includes:
+   - \usepackage{bbm}
+   - \usepackage{amssymb}
+   - \usepackage{amsmath}
+   - \usepackage{graphicx,float}
+output:
+  revealjs::revealjs_presentation:
+    theme: simple
+    transition: slide
+    center: false
+    highlight: null
+    self_contained: false
+    lib_dir: libs
+    reveal_plugins: ["chalkboard", "zoom"]
+    reveal_options:
+      slideNumber: false
+      progress: true
+    includes:
+      before_body: doc_prefix.html
+---
+
+```{r my_opts, cache=FALSE, include=FALSE}
+library(knitr)
+opts_chunk$set(fig.align="center", fig.height=5, fig.width=5.5, collapse=TRUE, comment="", prompt=TRUE,message=FALSE, warning=FALSE, tidy = FALSE)
+options(width=63)
+```
+#<img src="howto.jpg"></img>
+
+# Basic objects and their operations
+
+## Important objects
+
+Some important objects in R
+
+- `vector`
+- `matrix` and `data.frame`
+- `character` and `factor`
+
+In terms of data analysis, `data.frame` is perhaps the most important R object.
+
+## `vector`
+
+Vectors can be created by concatenation (`c`), sequencing (`:` or `seq`), or replication (`rep`):
+
+```{r,cache=T}
+# create a vector via concatenation
+x = c(1,5,0.8,10)
+x
+# create a vector via seq
+y=1:3
+y
+z = seq(from=1,to=10,by=2)
+z
+# create a vector via rep
+w = rep(1,times=5)
+w
+u = rep(c(1,2),each=3)
+u
+```
+
+## `vector`
+
+Entries of a vector can be accessed by specifying their indices as a vector:
+
+```{r,cache=T}
+x = c(1,5,0.8,10)
+x
+# obtain number of entries of a vector
+length(x)
+# access entries of a vector
+x[1]
+x[1:3]
+# remove some entries
+y=x[-c(1,3)]
+y
+```
+
+
+## `matrix` and `data.frame`
+
+Both `data.frame` and `matrix` have a grid layout in rows and columns. However, the object types for all columns of a `matrix` have to be the same. 
+
+- A matrix can be created by the command `matrix`, or by combining vectors as rows (`rbind`) or as columns (`cbind`)
+- A `matrix` can be coerced into a data frame via `as.data.frame`
+- A data frame can be created by the command `data.frame` or automatically when importing data
+
+
+## `matrix` and `data.frame`
+
+```{r,cache=T}
+# create a matrix
+x = matrix(1:10,nrow=2,ncol=5)
+x
+dim(x)
+# convert x into a data.frame
+y = as.data.frame(x)
+y
+dim(y)
+# indexing for matrix or data.frame
+x[c(1,2),c(1,5)]
+y[c(1,2),c(1,5)]
+# access variable in data frame via $
+y$V1
+```
+
+
+## `matrix` and `data.frame`
+
+```{r,cache=T}
+x = 1:3; y = 2:4
+# create a matrix
+z = cbind(x,y)
+z
+# create a matrix
+w = rbind(x,y)
+w
+# make w into data.frame
+v = as.data.frame(w)
+v
+# add a variable to v
+v$New = c(10,20)
+v
+```
+
+
+## Operations on vectors/matrices 
+
+The operations `+`, `-`, `*` (multiplication), `/`, and `^` (power) operate *entrwise* on vectors and matrices.
+```{r}
+x = 1:3
+x
+y = 2:4
+y
+x+y
+x-y
+x*y
+x^2
+sqrt(x)
+```
+
+## Operations on vectors/matrices 
+
+```{r}
+x = 1:3
+x
+y = 2:4
+y
+# transpose of y
+t(y)
+# matrix multiplication
+x%*%y
+x%*%t(y)
+```
+
+- `x%*%y`: sum of products of pairs of entries with matching indices. 
+
+
+## `character` and `factor`
+
+`character` is often used to name variables or annotate figures, and `factor` to describe values of a discrete random variable.
+
+- A `character` can be created by enclosing a sequence of characters by quotes (`''` or `" "`), or by concatenation (`c`) of characters
+- A `factor` can be created by the command `factor` or by coercing (`as.factor`)
+
+## `character`
+
+```{r,cache=T}
+a = 'This is'
+a
+b = 'Stat 435'
+# both a and b are characters
+# concatenate strings via paste
+w=paste(a,b,sep=" ")
+w
+# concatenate strings via c
+z = c(a,b)
+#z is a vector whose entries are characters
+z[1]
+z[2]
+```
+
+## `factor`
+
+```{r,cache=T}
+x = c(rep('F',6),rep('M',6))
+x
+# obtain object type
+class(x)
+# convert x into factor
+y = as.factor(x)
+y
+class(y)
+levels(y)
+```
+
+
+## `factor`
+
+```{r,cache=T}
+x = c(rep(1,6),rep(2,6))
+x
+class(x)
+# convert x into factor
+y = as.factor(x)
+y
+class(y)
+levels(y)
+```
+
+
+## `data.frame`
+
+Each column of a `data.frame` can have its own object type, whereas all columns of a `matrix` have to have the same object type. 
+
+```{r,cache=T}
+x = data.frame("Variable1"=c(1,3,5),
+               "Variable2"=as.factor(c('A','B','C')))
+x
+# display data structure for x
+str(x)
+```
+
+
+# Basic operations on data
+
+## Import and export data
+
+- Rstudio's "Import Data" functionality provides a GUI to import data from *CSV*, *Excel*, etc, and implements the functionality of `read.csv`
+- The command `read.table` (`write.data`) imports (saves) data from (into) `.txt` or `.data` files
+- `save` (`save.image`) saves an object (the workspace) into an object
+
+
+## A data set
+
+The data set `Auto.data` (or file `Auto.csv`) contains `mpg` (miles per gallon) for cars of different numbers of `cylinders`, engine `displacement`, `horsepower`, manufactures (`name`), etc.
+
+```{r,echo=F}
+AD1 = read.table("Auto.data",header = T,na.strings = "?")
+head(AD1)
+```
+
+
+
+## Import and export data
+
+Data are often stored in a directory or on a website. So, we need to tell importing commands where data are. By default, R imports (exports) data from (to) *current working directory*.
+
+```{r,cache=T}
+# show current working directory
+getwd()
+AD1 = read.table("Auto.data",header = T,na.strings = "?")
+class(AD1)
+dim(AD1)
+```
+
+- `header = T`: the first line of the file contains the variable names
+- `na.strings = "?"`: the string `?` indicates a missing element in the data matrix  
+
+
+## Import and export data
+
+Import data from a csv file online:
+
+```{r,cache=T}
+AD2 = read.csv("http://faculty.marshall.usc.edu/gareth-james/ISL/Auto.csv",
+                 header = T,na.strings = "?")
+class(AD2)
+dim(AD2)
+AD3 = AD2[1:2,1:5]
+AD3
+# export AD3
+write.csv(AD3,file="myFile.csv")
+```
+
+
+## Save and load objects
+
+By default, R saves (loads) data to (from) *current working directory*. 
+
+```{r,cache=T}
+AD2 = read.csv("http://faculty.marshall.usc.edu/gareth-james/ISL/Auto.csv",
+                 header = T,na.strings = "?")
+save(AD2,file="Partial.RData")
+save.image("Everything.RData")
+load("Everything.RData")
+```
+
+**Caution:** Loading into the current workspace anything that contains variables with identical names to those in the currently workspace will overwrite these objects in the current workspace.
+
+## Check or clean data
+
+```{r 'autodata',cache=T}
+AD1 = read.table("Auto.data",header = T,na.strings = "?")
+class(AD1)
+dim(AD1)
+# show variable names in data
+colnames(AD1)
+# remove na's from data
+AD1a = na.omit(AD1)
+dim(AD1a)
+```
+
+*Note:* by default, a row with a missing value will be removed `na.omit`
+
+## Remarks
+
+- There are other objects in R such as `list` and `tibble`, which are even more versatile than `data.frame`
+- There are other R commands to import data 
+- The R package `dplyr` is a powerful tool for data processing, and the course contains supplementary videos for interested students
+
+# Basic graphics commands
+
+
+## The `plot` function
+
+The `plot` function is a basic graphics command that creates 2D plots. Its basic syntax is:
+
+```
+plot(x, y, ...)
+```
+- `x`: the x coordinates of points in the plot
+- `y`: the y coordinates of points in the plot
+- `...`: other arguments such as `type` (what type of plot should be drawn), `main` (an overall title for the plot), `xlab` (a title for the x axis) and `ylab`(a title for the y axis) 
+
+
+## The *Auto* data set
+
+The data set `Auto.data` (or file `Auto.csv`) contains `mpg` (miles per gallon) for cars of different numbers of `cylinders`, engine `displacement`, `horsepower`, manufactures (`name`), etc.
+
+```{r,echo=F}
+AD1 = read.table("Auto.data",header = T,na.strings = "?")
+head(AD1)
+```
+
+
+## Illustration
+
+```{r 'plot1',cache=T,dependson=c('autodata')}
+plot(AD1a$displacement,AD1a$mpg,xlab="Engine displacement",
+     ylab="Miles per gallon")
+```
+
+
+## Illustration
+
+```{r 'plot2',cache=T,dependson=c('autodata')}
+attach(AD1a)
+plot(cylinders,mpg,xlab="Number of cylinders",
+     ylab="Miles per gallon")
+```
+
+## The `pairs` function
+
+The `pairs` function creates a *scatterplot matrix*, i.e., a scatterplot for every pair of variables for a given data set. 
+
+It can also produce a scatterplot matrix for a subset of variables (by using the `~` operator).
+
+## Illustration
+
+```{r 'plot3',cache=T,dependson=c('autodata')}
+attach(AD1a)
+pairs(~mpg+displacement+horsepower,AD1a)
+```
+
+## The `identify` function
+
+`identify` reads the position of the graphics pointer when the (first) mouse button is pressed. It then searches the coordinates given in `x` and `y` for the point closest to the pointer. 
+
+If this point is close enough to the pointer, its index (as the index of the row that contains the corresponding coordinate measurements for this point) will be returned as part of the value of the call.
+
+## Illustration
+
+```
+attach(AD1a)
+plot(horsepower,mpg)
+identify(horsepower,mpg)
+# click on a point on the plot
+# Hit Esc key once you have selected the point.
+[1] 389 
+# 389 is the index (i.e., row) number of the point 
+# the Instructor selected
+```
+
+## The `hist` function
+
+The `hist` function creates histogram for a variable (or for several variables).
+
+## Illustration
+
+```{r,cache=T,dependson=c('autodata')}
+attach(AD1a)
+hist(horsepower,breaks=20)
+```
+
+## Illustration
+
+```{r,cache=T,dependson=c('autodata')}
+attach(AD1a)
+hist(horsepower,breaks=50)
+```
+
+## Remark
+
+The course Stat 437 covers approximately 3 weeks of materials for data visualization.
+
+
+## License and session Information
+
+[License](http://math.wsu.edu/faculty/xchen/stat412/LICENSE.html)
+
+<section style="font-size: 0.75em;">
+```{r}
+sessionInfo()
+```
+</section>
+
+
+```{r converttonotes, include=FALSE, cache=FALSE}
+source("make_notes.R")
+```
