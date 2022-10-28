@@ -1,0 +1,76 @@
+---
+title: "9/16 Lecture Notes"
+author: "Zach Fechko"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+    prettydoc::html_pretty:
+        theme: cayman
+        highlight: github
+---
+***
+
+## Variability of estimates
+- Recall <br>
+$\hat{\beta_1} = \frac{\sum_{i=1}^n (x_i - \bar{x})(y_i - \bar{y})}{\sum_{i=1}^n (x_i - \bar{x})^2}$ <br>
+and $\hat{\beta_0} = \bar{y} - \hat{\beta_1}\bar{x}$ <br>
+- When $\epsilon_i$ is uncorrelated
+    - $[SE(\hat{\beta_1})]^2 = \frac{\sigma^2}{\sum_{i=1}^n (x_i - \bar{x})^2}$
+    - $[SE(\hat{\beta_0})]^2 = \frac{\sigma^2}{n}[\frac{1}{n} + \frac{\bar{x}^2}{\sum_{i=1}^n (x_i - \bar{x})^2}]$
+- Variances of $\hat{\beta_0}$ and $\hat{\beta_1}$ contain information on the accuracy of $\hat{\beta_0}$ and $\hat{\beta_1}$
+- Without information on $\sigma$, variances of $\hat{\beta_0}$ and $\hat{\beta_1}$ cannot be accurately assessed
+
+## Confidence intervals for estimates
+- The approximate 95% confidence interval for
+    - $\hat{\beta_0}$ is $\hat{\beta_0} \pm 2SE(\hat{\beta_0})$
+    - $\hat{\beta_1}$ is $\hat{\beta_1} \pm 2SE(\hat{\beta_1})$
+
+## Testing the slope
+- A test statistic for this purpose is the *t-statistic* <br>
+$t = \frac{\hat{\beta_1} - 0}{SE(\hat{\beta_1})}$
+- If $SE(\hat{\beta_1})$ is small, then relatively small $|\hat{\beta_1}|$ will result in a large $t$-statistic
+
+## Outliers
+- An outlier is an observation ($x_i$, $y_i$) which $y_i$ is far from the value predicted by the regression line
+- Observations whose studentized residuals are greater than 3 are considered outliers
+- An outlier may significantly affect RSE (i.e., residual standard error) and $R^2$
+- Removing an outlier may or may not significantly affect the subsequent estimated regression line, and this is related to *high-leverage points*
+
+## High-leverage points
+- A high-leverage point is an observation ($x_i$, $y_i$) which $x_i$ is far from the mean of $X$
+- Removing a high-leverage point often significantly affects the subsequent estimated regression line
+- Let $p$ be the number of predictors in the model, and $n$ be the number of observations, if the leverage statistic for an observation greatly exceeds $(p + 1)/n$, then the observation is considered a high-leverage point
+
+## Q-Q plot
+- A Q-Q (*quantile-quantile*) plot plots observed quantiles against theoretical quantiles, and hence provides information on whether observations under investigation have a distribution that matches this theoretical distribution
+    - A normal Q-Q plot does this with the standard Normal distribution as the theoretical distribution
+    - In a normal Q-Q plot, x-axis plots the theoretical quantiles from the standard Normal distribution with mean 0 and sd 1, and y-axis plots the observed quantiles
+```{r}
+#Using the mtcars dataset as an example
+qqnorm(mtcars$mpg, pch = 1, main = "Normal Q-Q plot of mpg")
+qqline(mtcars$mpg, col = "steelblue", lwd = 2)
+```
+
+## Kolmogrov-Smirnov test
+- The Kolmogrov-Smirnov test is a test of whether a sample is drawn from a population with a specific distribution
+```{r}
+set.seed(0)
+x <- rpois(n = 20, lambda = 5)
+ks.test(x, "pnorm")
+```
+
+## Correlation of error terms
+- It is *extremely important that the error terms are uncorrelated* Correlated error terms often present in time series data and data with latent variables. Such correlation affects
+    - testing if random errors are Normally distributed
+    - Variances of estimated coefficients and variance of random error term
+    - Testing independence is a *highly nontrivial* issue in statistical learning
+- The true model is <br>
+$Y = 1 + 2X + \epsilon$ <br>
+with $n = 1000$ observations <br>
+$y_i = 1 + 2x_i + \epsilon_i$
+- The random errors are *equally correlated*, such that <br>
+$\epsilon_i = \sqrt{1-0.3}X_i + \sqrt{0.3}X_0$ <br>
+and $X_0, X_1, \dots, X_{999}$ are iid and normally distributed with mean 0 and sd 1
+- Fit a simple linear model and obtain fitted values and residuals
+
+## Misc Things
+- The p-value is how likely an observed statistic value is, given the null hypothesis is true 

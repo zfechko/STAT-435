@@ -1,0 +1,22 @@
+rnorm(4)
+rnorm(4)
+set.seed(123)
+rnorm(4)
+set.seed(123)
+rnorm(4)
+rnorm(4)
+
+set.seed(1)
+x = rnorm(1000, mean = 0, sd = 1)
+hist(x)
+
+set.seed(1)
+x = rnorm(1000, mean = 0, sd = 1)
+mean(x)
+sd(x)
+var(x)
+
+y = rnorm(10^5, mean = 0, sd = 1)
+mean(y)
+sd(y)
+var(y)

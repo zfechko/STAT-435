@@ -11,13 +11,28 @@ header-includes:
    - \usepackage{float}
    - \floatplacement{figure}{H}
 output:
-  pdf_document: default
+    html_document: 
+    pdf_document: default
 fontsize: 11pt
+date: "`r Sys.Date()`"
 ---
 
 ```{r, echo=FALSE, warning=FALSE}
 library(knitr)
+library(ISLR)
 opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
+```
+
+```{css echo=FALSE}
+li {
+    margin-bottom: 0.75em;
+}
+
+ol .roman {
+    list-style-type: lower-roman;
+}
+
+
 ```
 
 # General guidelines
@@ -59,10 +74,187 @@ Suppose we want to test that a particular subset of $q$ of the $p$ regression co
 
 4. Question 3(a) of Section 3.7 (the section for exercises) of the Textbook.
 
+# Conceptual exercise answers
+
+## Question 1
+### (a)
+<ul>
+<li>$\hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x}$  </li>  
+<li>$\hat{\beta}_1 = \frac{\sum_{i=1}^n (x_i - \bar{x})(y_i - \bar{y})}{\sum_{i=1}^n (x_i - \bar{x})^2} = \frac{S_{xy}}{S_{xx}}$</li>
+</ul>
+
+### (b)
+$\hat{\beta_1}$ is unbiased because $E(\hat{\beta}_1) = \frac{S_{xy}}{S_{xx}} = \frac{Cov(X,Y)}{Var(X)} = \frac{Cov(X,Y)}{S_{xx}/(n-1)} = \frac{Cov(X,Y)}{S_{xx}/n} = \frac{Cov(X,Y)}{S_{xx}/n} = \frac{Cov(X,Y)}{Var(X)} = \beta_1$   
+$\hat{\beta_0}$ is unbiased because $E(\hat{\beta_0}) = E(\bar{y} - \hat{\beta}_1 \bar{x}) = E(\bar{y}) - E(\hat{\beta}_1 \bar{x}) = \bar{y} - \beta_1 \bar{x} = \beta_0$
+
+### (c)
+$SE(\hat{\beta_1}) = \sqrt{\frac{1}{n} \times \frac{\frac{1}{n-2} \sum_{i=1}^n (X_i - \bar{X})^2 \hat{u_i}^2}{[\frac{1}{n} \sum_{i=1}^n (X_i - \bar{X})^2]^2}}$  
+
+
+## 2
+The $R^2$ is defined as the fraction of the total variation in $Y_i$ that is explained by $X_i$. Because we can write: $Y_i = \hat{Y_i} + \hat{u_i}$. Which implies that the $R^2$ is the ratio of the sample variance
+of $\hat{Y_i}$ to the sample variance of $Y_i$.  
+$R^2 = \frac{\text{Explained sum of squares}}{\text{Total sum of squares}}$ 
+$= \frac{\text{TSS} - \text{RSS}}{\text{TSS}} = 1 - \frac{\text{RSS}}{\text{TSS}} = 1 - \frac{\sum_{i=1}^n (\hat{u_i})}{\sum_{i=1}^n (Y_i - \bar{Y})^2}$  
+The value of $R^2$ is always between 0 and 1. The closer $R^2$ is to 1, the better the model fits the data.
+
+## 3
+### (a)
+In order to find a test statistic for multivariate linear regression, we need to use the F-statistic, which is:  
+
+
+## 4
+Using the equation $$\text{Salary} = \beta_0 + \beta_1 \text{GPA} + \beta_2 \text{IQ} + \beta_3 \text{Level} + \beta_4 X_4 + \beta_5 X_5 + \varepsilon$$
+For fixed IQ and GPA  
+$\text{Salary}_{\text{High School}} = 50 + 20(1) + 0.07(2) + 35(0) + 0.01(x_1 x_2) - 10(x_1 x_3) + \varepsilon$
+$\text{Salary}_{\text{College}} = 50 + 20(1) + 0.07(2) + 35(1) + 0.01(x_1 x_2) - 10(x_1) + \varepsilon$  
+Which gives us $\text{Salary}_{\text{College}} = \text{Salary}_{\text{High School}} + 35 - 10(x_1)$  
+From here we can use $\text{Salary}_{\text{College}} - \text{Salary}_{\text{High School}} = 35 - 10(x_1)$
+Assuming the salary difference is >= 0, we get  
+$35 - 10(x_1) \leq 0 x_1 \geq 3.5$  
+Assuming the salary difference is <= 0, we get  
+$35 - 10(x_1) \geq 0 x_1 \leq 3.5$  
+Therefore, for a fixed value of IQ and GPA, **option iii is correct**
+
+
 # Applied exercises
 
-1. Exercise 9 of Section 3.7 of the Textbook.
+## 1. Exercise 9 of Section 3.7 of the Textbook.
+### a. 
+```{r}
+# produce a scatterplot of all the variables in the Auto data set
+pairs(Auto)
+```
 
-2. Exercise 10 of Section 3.7 of the Textbook.
+### b. 
+```{r}
+#compute the matrix of correlations between the variables in the Auto data set, omitting the name variable
+cor(Auto[,-9])
+```
 
-3. Exercise 14 of Section 3.7 of the Textbook.
+### c. 
+```{r}
+lm.auto <- lm(mpg ~ . - name, data = Auto)
+summary(lm.auto)
+```
+<ol style="list-style-type: lower-roman">
+<li> There are multiple predictors that have a relationship with the response `mpg` because their p-values are significant. Those predictors are `displacement`, `year`, and `weight`</li>
+<li> The predictors that have a statistically significant relationship with the response `mpg` are `displacement`, `year`, `origin`, and `weight`</li>
+<li> The coefficient of `year` is 0.7507, which means that for every year that passes, the mpg increases by 0.7507. </li>
+</ol>
+
+### d. 
+```{r}
+plot(lm.auto)
+```
+The residuals vs fitted graph shows a u shape, which suggests that the data is non-linear. It also shows that the variance isn't constant with the funnel shape near the end.
+Based on the normal Q-Q plot, we can see that the most of the residuals are normally distributed escept for the ones from x= 2 to 3.
+Based on the Scale-Location plot, it looks like there aren't any outliers because the data fits between [0, 2].
+Based on the Residuals vs Leverage plot, it doesn't look like there are any observations that provide high leverage.
+
+### e.
+The two included interactions, `displacement * horsepower` and `horsepower * origin` are statistically significant
+```{r}
+dp.interact <- lm(mpg ~ . - name + displacement * horsepower, data = Auto)
+hporigin.interact <- lm(mpg ~ . - name + horsepower * origin, data = Auto)
+```
+
+### f.
+Messing around with the data I found that `log(acceleration)` while still significant, is less significant than `acceleration`. Squaring `horsepower` and squaring `weight` doesn't change their respective significances. And squaring `cylinders` makes `cylinders` and `horsepower` significant.
+
+## 2. Exercise 10 of Section 3.7 of the Textbook.
+```{r}
+#using the carseats data
+#(a) Fit a multiple regression model to predict Sales using Price, Urban, and US.
+car <- Carseats
+head(car)
+lm1 <- lm(Sales ~ Price + Urban + US, data = car)
+summary(lm1)
+```
+
+### b.  
+<ul>
+<li>`Price`: For every increase of 1 in Price, Sales decreases by $\approx$ 54 units</li>
+<li>`Urban`: If the store is in an urban area, Sales decreases by $\approx$ 22 units</li>
+<li>`US`: If the store is in the US, Sales increases by 1200 units</li>
+</ul>
+
+### c.
+$\text{Sales} = 13.043469 - 0.054459 (\text{Price}) - 0.021916 (\text{Urban}) + 1.200573 (\text{US})$  
+
+### d.
+We can reject the null hypothesis $H_0: \beta_j =0$ using the `Price` and `US` predictors.
+
+### e. 
+```{r}
+lm2 <- lm(Sales ~ Price + US, data = car)
+summary(lm2)
+```
+### f.
+Both the models are able to explain the variation in `Sales`because the $R^2$ and adjusted $R^2$ are really close to each other. The residiual standard error of the models are small which means the model fits the data well.
+### g.
+```{r}
+confint(lm2)
+```
+### h. 
+```{r out.width = c('50%', '50%'), fig.show = 'hold'}
+plot(lm2)
+```
+Looking at the plots, we can see that there is no evidence of outliers or high leverage points.  
+## 3. Exercise 14 of Section 3.7 of the Textbook.  
+### a.  
+```{r}
+set.seed(1)
+x1 <- runif(100)
+x2 <- 0.5 * x1 + rnorm(100)/10
+y <- 2 + 2 * x1 + 0.3 * x2 + rnorm(100)
+```
+The linear model is $y = 2 + 2x_1 + 0.3x_2 + \varepsilon$  
+### b. 
+```{r}
+cor(x1, x2)
+plot(x1, x2)
+```
+
+### c.
+```{r}
+summary(lm(y ~ x1 + x2))
+```
+<ul>
+<li> $\hat{\beta_0} = 2.1305$</li>
+<li> $\hat{\beta_1} = 1.4396$</li>
+<li> $\hat{\beta_2} = 1.0097$</li>
+</ul>
+The estimated value for the intercept is 2.1305, which is close to the true value of 2, this is the only estimator that is close to the true value. At the 5% significance level, we can reject the null hypothesis for $\beta_1$ but not $\beta_2$.
+
+### d. 
+```{r}
+summary(lm(y ~ x1))
+```
+In this model, the estimated value for `x1` is significant and we can more confidently reject the null hypothesis here than in the previous model
+
+### e.
+```{r}
+summary(lm(y ~ x2))
+```
+Compared to the full model in part c, the estimate of $\beta_1$ for `x2` is significant and we can reject the null hypothesis. 
+
+### f.
+The results in the last three problems do contradict each other. When we fitted models for `x1` and `x2` individually, their estimates were significant. Compared to the full model in part c, where x1 could be considered significant and x2 was not significant at all.
+A reason for this would be some form of collinearity between the two predictors which could reduce the accuracy of the estimates. This is evident with the values of the estimators' standard errors, which are higher in the combined model and smaller in the individual models.
+
+### g.
+```{r}
+x1 <- c(x1, 0.1)
+x2 <- c(x2, 0.8)
+y <- c(y, 6)
+
+summary(lm(y ~ x1 + x2))
+
+summary(lm(y ~ x1))
+
+summary(lm(y ~ x2))
+
+```
+With the introduction of the new observation, `x1` is no longer significant in the full model, but significant individually. `x2` is now significant in every model. 
+In the full model `y ~ x1 + x2` and the individual model `y ~ x2`, the new observation is a high leverage point. Whereas in the individual model `y ~ x1`, the new observation is an outlier.

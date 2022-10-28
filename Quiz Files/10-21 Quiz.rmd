@@ -1,0 +1,55 @@
+---
+title: "10/21 Quiz"
+author: "Zach Fechko"
+---
+
+# Number 1
+```{r out.width = c('50%', '50%'), fig.show = 'hold'}
+#read in Auto dataset from ISLR
+library(ISLR)
+library(car) #for vif function
+
+#Build simple linear regression meodel with horsepower as the predictor and mpg as the response
+lm.fit <- lm(mpg ~ horsepower, data = Auto)
+as.factor(Auto$origin)
+lm.fit
+#Print the summary of the model
+summary(lm.fit)
+#print diagnostic plots
+plot(lm.fit)
+```
+
+# Number 2
+```{r out.width = c('50%', '50%'), fig.show = 'hold'}
+#using auto dataset, build a multiple linear regression model with mpg as the response and cylinders, weight, and horsepower as predictors
+lm.fit2 <- lm(mpg ~ cylinders + weight + horsepower, data = Auto)
+lm.fit2
+
+#Print the summary of the model
+summary(lm.fit2)
+
+#show the variance inflation factor for each predictor
+vif(lm.fit2) #uses vif function from car package
+
+
+#print diagnostic plots
+plot(lm.fit2)
+```
+
+# Number 3
+```{r out.width = c('50%', '50%'), fig.show = 'hold'}
+#using auto dataset, build a multiple linear regression model with all potential predictors in the dataset with mpg as response
+lm.fit3 <- lm(mpg ~ cylinders + displacement + horsepower + weight + acceleration + year + origin, data = Auto)
+lm.fit3
+
+#Print the summary of the model
+summary(lm.fit3)
+
+#show the variance inflation factor for each predictor
+vif(lm.fit3) #uses vif function from car package
+
+
+#print diagnostic plots
+plot(lm.fit3)
+
+```

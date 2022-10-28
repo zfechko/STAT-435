@@ -1,0 +1,35 @@
+---
+title: "Lecture Notes 4"
+author: "Zach Fechko"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+    rmdformats::downcute:
+        downcute_theme: "chaos"
+        downcute_highlight: "github"
+---
+
+# Bootstrap
+
+## Statistics
+- The *bootstrap estimated mean* of $\hat{\alpha}$ is $\bar{\alpha} = \frac{1}{B} \sum_{j=1}^B \hat{\alpha}_j$.
+- The *bootstrap estimated variance* of $\hat{\alpha}$ is $$\text{SE}^2(\hat{\alpha}) = \frac{1}{B-1} \sum_{j=1}^B (\hat{\alpha}_j - \bar{\alpha})^2$$
+- For $\alpha \in \{0, 1\}$, the bootstrap $(1-\alpha) \times$ 100 percent confidence interval for $\hat{\alpha}$ is $(C_L, C_U)$ 
+
+# Bootstrapping linear regression
+## Linear regression
+- Model: $Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \dots + \beta_p X_p + \epsilon$ with $E(\epsilon) = 0$ and $Var(\epsilon) = \sigma^2$.
+- Observations: $(y_i, x_{1i}, x_{2i}, \dots, x_{pi})$ for $i = 1, 2, \dots, n$.
+
+## from sample
+- Set $\beta = (\beta_0, \beta_1, \beta_2, \dots, \beta_p)$ and $\hat{\beta} = (\hat{\beta}_0, \hat{\beta}_1, \hat{\beta}_2, \dots, \hat{\beta}_p)$.
+- Sample from data generating process: $$S = \{z_i = (y_i, x_{1i}, x_{2i}, \dots, x_{pi}), i=1, \dots, n \}$$
+- Sample with replacement $n$ observations from $S$ and repeat this independently to obtain $B$ subsets $S_j = 1, \dots, B$
+Obtain $\hat{\beta}_j$ for each $j = 1, \dots, B$.
+- Use the empirical distribution of $\hat{\beta}_j$ as the distribution of $\hat{\beta}$
+- Sample with replacement $n$ observations from $R$ to obtain $B$ sets of residuals $R_j = \{e_i^j, i=1, \dots, n\}$.
+
+## bootstrapping residuals
+- Residuals: $R = \{e_i = y_i - \hat{y}_i, i = 1, \dots, n\}$.
+- Sample with replacement $n$ observations from $R$ to obtain $B$ sets of residuals $R_j = \{e_i^j, i=1, \dots, n\}$.
+- For each $j$, set $y_i^j = \hat{y}_i + e_i^j$ and fit the model with observations $$S_j = \{z_i^j = (y_i^j, x_{1i}, x_{2i}, \dots, x_{pi}), i=1, \dots, n \}$$ and obtain estimate $\hat{\beta}_j$
+- Use the empirical distribution of $\hat{\beta}_j$ as the distribution of $\hat{\beta}$

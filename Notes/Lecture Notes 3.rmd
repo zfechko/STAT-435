@@ -1,0 +1,265 @@
+---
+title: "Lecture Notes 3"
+author: "Zach Fechko"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: rmdformats::readthedown
+---
+```{css, echo=FALSE}
+#equation {
+    border = solid 1px black;
+    padding: 5px;
+    margin: 5px;
+    text-align: center;
+}
+
+mark {
+    background-color: indianred;
+    color: cornsilk;
+}
+
+#dracula_white {
+    background-color: #f8f8f2;
+}
+
+strong{
+    color: maroon;
+}
+
+```
+
+```{r setup, include=FALSE}
+library(ISLR)
+library(tidyverse)
+library(broom)
+```
+
+# Simple Linear Regression with a qualitative regressor
+
+## Summary 
+*Simple linear regression with a qualitative regressor* is used to model the **mean** of a quantitative random variable as a linear function of another *qualitative* random variable
+
+## True model
+- For two quantitative random variables $X$ and $Y$, a simple linear model is  
+<span id="equation">
+$E(Y) = \beta_0 + \beta_1 X$  
+</span>
+where $\beta_0$ and $\beta_1$ are unknown, true model parameters (or coefficients), and $\beta_1$ is called the <mark>regression coefficient</mark>.
+
+- The above model is equivalent to  
+<span id="equation">
+$Y = \beta_0 + \beta_1 X + \epsilon$ with $E(\epsilon) = 0$  
+</span>
+which is called the <mark>population regression line</mark>
+
+# Linear regression with a qualitative regressor
+
+## Motivation
+- How is the `Balance` of a credit card related to its holder's `Gender`?
+- How is the `Balance` of a credit card related to its holder's `Ethnicity`?
+
+<div id="dracula_white">
+```{r out.width = c('50%', '50%'), fig.show = 'hold'}
+par(bg = "#f8f8f2")
+boxplot(Balance ~ Gender, data = Credit)
+boxplot(Balance ~ Ethnicity, data = Credit)
+```
+</div>
+## Model 1: 2 levels
+- Coding: `Gender` has 2 levels: `Male`, and `Female`
+- *dummy variable*: $x_i = 0$ if $i\text{th}$ person is `Female`, and $x_i = 1$ if $i\text{th}$ person is `Male`
+- Model: $y_i = \beta_0 + \beta_1 x_i + \epsilon_i$, which induces 2 submodels:
+    - $y_i = \beta_0 + \beta_1 + \epsilon_i$ if $i\text{th}$ person is `Male`
+    - $y_i = \beta_0 + \epsilon_i$ if $i\text{th}$ person is `Female`
+
+### Fitting the Model 1
+```{r}
+lm(formula = Balance ~ Gender, data = Credit)
+```
+- `Male` card holders have a `Balance` of $\$509.80$
+- `Female` card holders have a `Balance` of $(\$509.80 + \$19.73) = \$529.53$
+
+
+### Testing the Model 1
+```{r collapse=TRUE}
+lm(formula = Balance ~ Gender, data = Credit)
+summary(lm(formula = Balance ~ Gender, data = Credit))
+```
+- If model assumptions are met, `Gender` is not significant on affecting average `Balance` at 5% significance level based on the F-Statistic
+
+## Model 2: 3 levels
+- `Ethnicity` has 3 levels, `African American`, `Asian`, and `Caucasian`. *2 dummy variables are needed*
+    - $x_{i, 1} = 0$ if the $i\text{th}$ person is *not* `Asian` and $x_{i, 1} = 1$ if $i\text{th}$ person is `Asian`
+    - $x_{i, 2} = 0$ if the $i\text{th}$ person is *not* `Caucasian` and $x_{i, 2} = 1$ if $i\text{th}$ person is `Caucasian`
+- Model:<div id='equation'> $y_i = \beta_0 + \beta_1 x_{i, 1} + \beta_2 x_{i, 2} + \epsilon_i$</div>
+- Codings on previous slide
+- $\beta_0$: average `Balance` of `African American` card holders
+- $\beta_1$: average difference in `Balance` between `Asian` and `African American` card holders
+- $\beta_2$: average difference in `Balance` between `Caucasian` and `African American` card holders
+
+### Fitting the Model 2
+```{r collapse=TRUE}
+lm(formula = Balance ~ Ethnicity, data = Credit)
+```
+- `African American` card holders have an average balance of $\$531$
+- `Asian` card holders have an average balance of $\$(531 - 18.69) = \$512.31$
+- `Caucasian` card holders have an average balance of $\$(531 - 12.50) = \$518.50$
+
+### Testing the Model 2
+```{r colapse=TRUE}
+lm(formula = Balance ~ Ethnicity, data = Credit)
+summary(lm(formula = Balance ~ Ethnicity, data = Credit))
+```
+- If model assumptions are met, at 5% significance level, `Ethnicity` does not significantly affect average `Balance` based on the F-Statistic
+```{r collapse=TRUE}
+tidy(lm(formula = Balance ~ Ethnicity, data = Credit))
+```
+- If model assumptions are met and `Ethnicity` does not significantly affect average `Balance`, there is no need to check:
+    - whether there is a significant difference in average `Balance` between `Asian` and `African American` card holders or between `Caucasian` and `African American` card holders
+
+# Diagnostics
+- Diagnostics are the same as those for simple linear regression with a quantitative predictor
+
+<div id="dracula_white">
+```{r out.width = c('50%', '50%'), fig.show = 'hold'}
+par(bg = "#f8f8f2")
+plot(lm(Balance ~ Ethnicity, data = Credit)) # I only had to use this to generate all 4 plots
+```
+</div>
+
+# Multiple Linear Regression
+
+## Motivation
+- How is `sales` (in thousands of units) for a particular product related to advertising budgets (in thousands of dollars) for `TV`, `Radio`, and `Newspaper`?
+- Model:  
+<div id='equation'>
+$\text{sales} = \beta_0 + \beta_1 \text{TV} + \beta_2 \text{Radio} + \beta_3 \text{Newspaper} + \epsilon$
+</div>
+- We want to examine the relationship between `sales` and budgets for `TV`, `Radio`, and `Newspaper` *jointly* instead of *marginally*
+
+## Model
+- Response $Y$ and $p$ predictors $X_1, X_2, \dots, X_p$ are bound by the model:  
+<div id='equation'>
+$Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \dots + \beta_p X_p + \epsilon$
+</div>
+- $\beta_j$ change in units in $E(Y)$ for a unit change in $X_j$ with all other predictors held constant
+- $\epsilon$: error term with $E(\epsilon) = 0$ and $Var(\epsilon) = \sigma^2$
+- Estimate coefficient vector $\beta = (\beta_0, \beta_1, \dots, \beta_p)$ by the *least squares method*; estimate $\hat{\beta} = (\hat{\beta}_0, \hat{\beta}_1, \dots, \hat{\beta}_p)$ as *LSE* (least squares estimator)
+
+## Fitting the Model
+- Joint model vs marginal model
+
+## Testing on all coefficients
+- Is there a relationship between the response and any of the predictors? Namely, is $H_0: \beta_1 = \beta_2 = \dots = \beta_p = 0$ true?
+- Test statistic: F-Statistic
+<div id='equation'>
+$F = \frac{(TSS - RSS)/p}{RSS/(n - p - 1)}$  
+Where $TSS = \sum_{i = 1}^n (y_i - \bar{y})^2$ and $RSS = \sum_{i = 1}^n (y_i - \hat{y}_i)^2$
+</div>
+- If $H_0$ is true and the linear model assumptions are correct, F-statistic should be close to 1 on average; undersuitable conditions, the F-statistic approiximately follows an F-distribution
+- When $H_0$ and model assumptions are true, test statistic  
+<div id='equation'>
+$F = \frac{(RSS_0 - RSS)/q}{RSS/(n - p - 1)}$  
+Where $RSS_0 = \sum_{i = 1}^n (y_i - \bar{y})^2$
+</div>
+approximately follows an F-distribution with $q$ and $n - p - 1$ degrees of freedom
+
+## Testing on model fit 
+- $R^2$ measures the proportion of variance in the response that is explained by the model
+- With 3 predictors:  
+```{r collapse=TRUE}
+Advertising <- read.csv("Advertising.csv")
+FitL3c <- lm(sales ~ TV + radio + newspaper, data = Advertising)
+summary(FitL3c)$r.squared
+```
+- With 1 predictor:  
+```{r collapse=TRUE}
+FitL1c <- lm(sales ~ newspaper, data = Advertising)
+summary(FitL1c)$r.squared
+```
+
+# Interaction Terms: I 
+- If change (in unit) in $E(\text{sales})$ can be different for a unit change in `TV` at different values of `Radio` of for a unit change in `Radio` at different values of `TV`, then the model  
+<div id='equation'>
+$E(\text{sales}) = \beta_0 + \beta_1 \text{TV} + \beta_2 \text{Radio}$
+</div>
+is no longer suitable 
+- One way to account for this is to introduce an **interaction term** and use the model:  
+<div id='equation'>
+$E(\text{sales}) = \beta_0 + \beta_1 \text{TV} + \beta_2 \text{Radio} + \beta_3 \text{TV} \times \text{Radio}$
+</div>
+- A model like this:  
+<div id='equation'>
+$E(\text{sales}) = \beta_0 + \beta_1 \text{TV} + \beta_2 \text{Radio} + \beta_3 \text{TV}^2 + \beta_4 \text{Radio}^2$
+</div>
+would not work because there is no math to take into account the interaction between `TV` and `Radio`
+- The model  
+<div id='equation'>
+$E(\text{sales}) = \beta_0 + \beta_1 \text{TV} + \beta_2 \text{Radio} + \beta_3 \text{TV} \times \text{Radio}$
+</div>
+can be written as  
+<div id='equation'>
+$E(\text{sales}) = \beta_0 + \beta_1 \times \text{TV} + (\beta_2 + \beta_3 \times \text{TV}) \times \text{Radio}$
+<div>
+or  
+<div id='equation'>
+$E(\text{sales}) = \beta_0 + (\beta_1 + \beta_3 \times \text{Radio}) \times \text{TV} + \beta_2 \times \text{Radio}$
+</div>
+
+
+# Bootstrap
+- The **bootstrap** is mainly used to estimate and quantify the uncertainty associated with a given estimate or statisticl learning method 
+- For example, it can be used to estimate the standard error of an estimate (such as an estimated coefficient in a regression model)
+- The bootstrap may not work well when sample size is small 
+
+# Illustration 1
+
+## problem 
+Problem formulation: 
+<ul>
+- suppose we wish to invest a fixed sum of money into two financial assets that yield (random) returns of $X$ and $Y$
+- We will invest a fraction $\alpha$ of our money in $X$ and the rest $1-\alpha$ in $Y$
+- We ned to choose $\alpha$ to minimize the risk of our investment
+</ul>
+Namely, we need to find $\alpha$ that minimizes  
+$$\text{Var}(\alpha X + (1 - \alpha)Y)$$  
+$$\neq \alpha^2 \text{Var}(X) + (1 - \alpha)^2 \text{Var}(Y)$$  
+unless it's the case that $\text{Cov}(X, Y) = 0$
+
+## solution
+- By calculus , we know that  
+$$\alpha = \frac{\sigma_Y^2 - \sigma_{XY}}{\sigma_X^2 + \sigma_Y^2 - 2\sigma_{XY}}$$  
+minimizes  
+$$\text{Var}(\alpha X + (1 - \alpha)Y)$$  
+where $\sigma_X^2 = \text{Var}(X)$, $\sigma_Y^2 = \text{Var}(Y)$, and $\sigma_{XY} = \text{Cov}(X, Y)$
+- However, in reality, the quantities $\sigma_X^2$, $\sigma_Y^2$, and $\sigma_{XY}$ are unknown and need to be estimated
+
+## Estimate
+- With estimates $\hat{\sigma}_X^2$, $\hat{\sigma}_Y^2$, and $\hat{\sigma}_{XY}$, we have the plug-in estimate  
+$$\hat{\alpha} = \frac{\hat{\sigma}_Y^2 - \hat{\sigma}_{XY}}{\hat{\sigma}_X^2 + \hat{\sigma}_Y^2 - 2\hat{\sigma}_{XY}}$$  
+
+- If $\hat{\sigma}_X^2$, $\hat{\sigma}_Y^2$, and $\hat{\sigma}_{XY}$ are accurate, then $\hat{\alpha}$ is a good estimate of $\alpha$
+- How do we assess the accuracy of $\hat{\alpha}$ if we only have a sample of size $n$ at hand?
+    - Speed of convergence
+
+- Truth: $\sigma_X^2 = 1$, $\sigma_Y^2 = 1.25$, $\sigma_{XY} = 0.5$, and $\alpha = 0.6$
+- Estimates based on $B = 1000$ simulated, independent samples:
+    - $\bar{\alpha} = 0.59$ and $s(\hat{\alpha}) = 0.083$
+- Interpretation: for a random sample from the population, we would expect $\hat{\alpha}$ to differ from $\alpha$ by about $0.083$ on average
+
+## Simulated samples 
+- If we know the population distribution, we can simulate samples
+- Suppose we simulate $B = 1000$ *independent samples* for $(X, Y)$ (if we knew the truth), we will have $B$ estimates $\hat{\alpha}_j, j = 1, \dots, B$ of $\alpha$
+- The sample mean $\bar{\alpha} = \frac{1}{B} \sum_{j = 1}^B \hat{\alpha}_j$ should be close to $\alpha$
+- The sample standard deviation  
+$$s(\hat{\alpha}) = \sqrt{\frac{1}{B - 1} \sum_{j = 1}^B (\hat{\alpha}_j - \bar{\alpha})^2}$$
+(of \hat{\alpha}s) should be close to $\sigma_{\hat{\alpha}} = \sqrt{\text{Var}(\hat{\alpha})}$
+
+# simulation and double dipping
+- *Simulated from the truth*: when we know a data generating process, we can simulate samples to estimate a statistic on the process. However, if we know the truth, why do we need to estimate the statistic?
+- *Simulated from the estimate*: With a sample from a data generating process, we can estimate the process, use the estimated process to generate samples, and use the generated samples to estimate a statistic
+- *Resampling from the sample*: sample randomly from a sample from a data generating process, regard the sampled observations as a new dataset, and use them to estimate a statistic
+
+# Bootstrap procedure
+- Given a sample of size $n$, let $\hat{\alpha}$ be an estimate of a statistic $\alpha$ obtained from the sample
+- *Sample randomly with replacement* from the sample to obtain $n$ observations, and do this independently $B$ times to obtain $B$ bootstrap samples $S_j, j = 1, \dots, B$
+- Let $\hat{\alpha}_j$ be the estimate of $\alpha$ obtained from $S_j$. Then the *emperical distribution* $G$ of $\hat{\alpha}_j, j = 1, \dots, B$ is the distribution of $\hat{\alpha}$ if we had access to the population

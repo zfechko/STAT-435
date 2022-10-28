@@ -1,0 +1,183 @@
+---
+title: Stat 435 Lab Notes 1a
+always_allow_html: yes
+author: 
+     - Xiongzhi Chen
+     - Washington State University
+header-includes:
+   - \usepackage{bbm}
+   - \usepackage{amssymb}
+   - \usepackage{amsmath}
+   - \usepackage{graphicx,float}
+output:
+  revealjs::revealjs_presentation:
+    theme: simple
+    transition: slide
+    center: false
+    highlight: null
+    self_contained: false
+    lib_dir: libs
+    reveal_plugins: ["chalkboard", "zoom"]
+    reveal_options:
+      slideNumber: false
+      progress: true
+    includes:
+      before_body: doc_prefix.html
+---
+
+```{r my_opts, cache=FALSE, include=FALSE}
+library(knitr)
+opts_chunk$set(fig.align="center", fig.height=5, fig.width=5.5, collapse=TRUE, comment="", prompt=TRUE,message=FALSE, warning=FALSE, tidy = FALSE)
+options(width=63)
+```
+#<img src="howto.jpg"></img>
+
+# Samples and summary statistics
+
+## Samples from Gaussian r.v.'s
+
+Generate a sample from a Gaussian *random variable (r.v.)*. Basic syntax:
+
+```
+rnorm(n, mean = 0, sd = 1)
+```
+
+- `n`: sample size
+- `mean` and `sd`: vector of means and vector of standard deviations
+
+*Note:* `mean` and `sd` can be specified by user.
+
+
+## Samples from Gaussian r.v.'s
+
+Generate a sample of size 10 from the standard Gaussian random variable:
+
+```{r,cache=T}
+rnorm(4)
+rnorm(4)
+set.seed(123)
+rnorm(4)
+set.seed(123)
+rnorm(4)
+rnorm(4)
+```
+
+Note the use of `set.seed`.
+
+## Samples from Gaussian r.v.'s
+
+```{r,cache=T}
+set.seed(1)
+x = rnorm(1000,0,1)
+hist(x)
+```
+
+## Summary statistics
+
+```{r,cache=T}
+set.seed(1)
+x = rnorm(10^3,0,1)
+# sample mean
+mean(x)
+# sample standard deviation
+# denominator (n-1) used for sd and var
+sd(x)
+# sample variance
+var(x)
+# increase sample size
+y = rnorm(10^5,0,1)
+mean(y)
+sd(y)
+```
+
+*What do sample mean and sample variance converge to as sample size increases indefinitely?*
+
+## Summary statistics
+
+```{r,cache=T}
+set.seed(1)
+u = rnorm(10^2,0,1)
+w = rnorm(10^2,0,1)
+# sample covariance; default "pearson"
+cov(u,w)
+# sample correlation; default "pearson"
+cor(u,w)
+# increase sample size
+x = rnorm(10^4,0,1)
+z = rnorm(10^4,0,1)
+cov(x,z, method = "pearson")
+cor(x,z)
+```
+
+
+*Why is the absolute value of the sample covariance close to that of the sample correlation in the above example?*
+
+
+## Student t test
+
+Test if the mean $\mu$ of a Gaussian random variable is $0$:
+
+```{r 'egttest',cache=T}
+set.seed(1)
+n=20
+x = rnorm(n)
+sampleMean = mean(x)
+sampleStd = sd(x)
+tTestValue = sampleMean/(sampleStd/sqrt(n)) 
+tTestValue
+# use p-value for decision
+TwoSidedPvalue = 2*pt(-abs(tTestValue),df=19,ncp=0,lower.tail=TRUE)
+TwoSidedPvalue
+# Type I error level
+alpha = 0.05
+# use critical value for decision
+criticalValue = qt(alpha/2,df=19,ncp=0,lower.tail=FALSE)
+criticalValue
+abs(tTestValue) > criticalValue
+```
+
+
+## Student t test
+
+Student t test (mean=0, df=19), decision rule at Type I error level $\alpha=0.05$, and two-side p-value:
+
+```{r 'shade2e', cache=T, echo=F,dependson='egttest'}
+n=20; ct=0; a=0.05; UL=5
+LC=qt(a/2,n-1,ct,lower.tail = F)
+xseq1=seq(LC,UL,0.01); xseq2=seq(-UL,-LC,0.01)
+cord.x <- c(c(LC,xseq1,UL),c(-UL,xseq2,-LC))
+cord.y <- c(0,dt(xseq1,n-1,ct),0,0,dt(xseq2,n-1,ct),0) 
+curve(dt(x,n-1,ct), xlim=c(-UL,UL),
+      xlab = expression(x),ylab=expression(f['0,19'](x)),col="red") 
+polygon(cord.x,cord.y,col='skyblue')
+abline(v=0,col="gray",lwd=3); abline(v=-LC,col="blue",lwd=3,lty=2); abline(v=LC,col="blue",lwd=3,lty=2);
+abline(h=0); abline(v=tTestValue,col="black",lwd=3,lty=4)
+```
+
+## The auto data set
+
+The data set `Auto.data` contains `mpg` (miles per gallon) for cars of different numbers of `cylinders`, engine `displacement`, `horsepower`, manufactures (`name`), etc.
+
+```{r 'autodata',cache=T}
+AD1 = read.table("Auto-2.data",header = T,na.strings = "?")
+AD1a = na.omit(AD1)
+head(AD1a[,1:5])
+```
+
+## The auto data set
+
+```{r,dependson=c('autodata')}
+summary(AD1a)
+```
+
+## License and session Information
+
+[License](http://math.wsu.edu/faculty/xchen/stat412/LICENSE.html)
+
+<section style="font-size: 0.75em;">
+```{r}
+sessionInfo()
+```
+</section>
+
+
